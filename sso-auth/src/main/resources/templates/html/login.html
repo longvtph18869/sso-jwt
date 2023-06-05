@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>Insert title here</title>
+</head>
+<body>
+<form>
+	<div class="mb-3">
+		<label for="username" class="form-label">Username</label> <input
+			type="text" class="form-control" id="USERNAME"
+			placeholder="Enter username">
+	</div>
+
+	<div class="mb-3">
+		<div class="float-end">
+			<a href="javascript:void(0)" class="text-muted"
+				id="FORGOT_PASSWORD_BTN">Forgot password?</a>
+		</div>
+		<label class="form-label" for="password-input">Password</label>
+		<div class="position-relative auth-pass-inputgroup mb-3">
+			<input type="password" class="form-control pe-5"
+				placeholder="Enter password" id="PASSWORD">
+		</div>
+	</div>
+
+	<div class="mt-4">
+		<button class="btn btn-success w-100" id="LOGIN_BTN" type="button">Login</button>
+	</div>
+
+	<div class="mt-4 text-center">
+		<div class="signin-other-title">
+			<h5 class="fs-13 mb-4 title">Login with</h5>
+		</div>
+
+		<div>
+			<button id="FACEBOOK_LOGIN_BTN" type="button">Facebooke</button>
+			<button id="GITHUB_LOGIN_BTN" type="button">Github</button>
+			<button id="GOOGLE_LOGIN_BTN" type="button">Google</button>
+			<button id="KAKAO_LOGIN_BTN" type="button">Kakao</button>
+			<button id="NAVER_LOGIN_BTN" type="button">Naver</button>
+		</div>
+	</div>
+
+</form>
+<script type="text/javascript">
+	
+		$(document).ready(function(){
+			initEvent();
+		});
+		
+		function initEvent(){
+			
+			let redirectUrl = $('input#REDIRECT_URI').val();
+			
+			$('button#LOGIN_BTN').css('cursor', 'pointer').click(login);
+			
+			$('input#USERNAME').keyup(function(event) {
+			    if (event.which === 13) {
+			    	login();
+			    }
+			});
+			
+			$('input#PASSWORD').keyup(function(event) {
+			    if (event.which === 13) {
+			    	login();
+			    }
+			});
+			
+			$('button#FACEBOOK_LOGIN_BTN').click(function(){
+				window.location.href = BASE_URL + '/oauth2/authorize/facebook?redirect_uri=' + redirectUrl;
+			});
+			
+			$('button#GOOGLE_LOGIN_BTN').click(function(){
+				window.location.href = BASE_URL + '/oauth2/authorize/google?redirect_uri=' + redirectUrl;
+			});
+			
+			$('button#KAKAO_LOGIN_BTN').click(function(){
+				window.location.href = BASE_URL + '/oauth2/authorize/kakao?redirect_uri=' + redirectUrl;
+			});
+			
+			$('button#NAVER_LOGIN_BTN').click(function(){
+				window.location.href = BASE_URL + '/oauth2/authorize/naver?redirect_uri=' + redirectUrl;
+			});
+			
+			$('button#GITHUB_LOGIN_BTN').click(function(){
+				window.location.href = BASE_URL + '/oauth2/authorize/github?redirect_uri=' + redirectUrl;
+			})
+			
+		}
+		
+		function login(){
+			if (validation()){
+				alert("The username or password is null.");
+				return;
+			} 
+			var request = initParam();
+			var data = sys.mariaDB.ajax(BASE_URL + '/api/auth/login', JSON.stringify(request), 'POST');
+			if (data.status == "OK"){
+				let res = data.result;
+				handleRedirect(res.accessToken)
+			}else {
+				alert("Login failed.")
+			}
+		}
+		
+		function validation(){
+			var request = initParam();
+			if (isEmpty(request.username) || isEmpty(request.password)){
+				return 	true;
+			}
+			return false;
+		}
+		
+		function isEmpty(str){
+			if (str != null && str != undefined && str.trim().length != 0){
+				return false;
+			}
+			return true;
+		}
+		
+		function initParam(){
+			var loginRequest = {};
+			loginRequest.username = $('input#USERNAME').val();
+			loginRequest.password = $('input#PASSWORD').val();
+			loginRequest.redirectUri = $('input#REDIRECT_URI').val();
+			return loginRequest;
+		}
+		
+		function handleRedirect(accessToken){
+			let redirectUri = $("#REDIRECT_URI").val();
+			window.location.href = redirectUri + '?access_token=' + accessToken;
+		}
+	</script>
+
+</body>
+</html>
